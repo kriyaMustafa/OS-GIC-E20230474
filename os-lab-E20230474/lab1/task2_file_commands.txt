@@ -1,0 +1,12 @@
+/home/gic-kriya-mustafa/oslab-work/lab1/task2_files
+candle.txt
+lemon_renamed.txt
+candle.txt
+lemon.txt
+lemon_renamed.txt
+This is file candle
+This is file lemon
+candle.txt
+lemon_renamed.txt
+candle.txt
+lemon_renamed.txt
