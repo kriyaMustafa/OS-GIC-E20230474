@@ -1,0 +1,27 @@
+# Commands Used for Task 1: File Creator & Reader
+
+## Part A: File Creator
+# Compile and run library version:
+gcc -o file_creator_lib file_creator_lib.c
+./file_creator_lib
+cat output.txt
+
+# Compile and run system call version:
+gcc -o file_creator_sys file_creator_sys.c
+./file_creator_sys
+cat output.txt
+
+## Part B: File Reader & Display
+# Compile and run library version:
+gcc -o file_reader_lib file_reader_lib.c
+./file_reader_lib
+
+# Compile and run system call version:
+gcc -o file_reader_sys file_reader_sys.c
+./file_reader_sys
+
+## Windows Bonus (WinAPI)
+# On Windows CMD / PowerShell:
+gcc -o file_creator_win file_creator_win.c
+.\file_creator_win.exe
+type output.txt

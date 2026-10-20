@@ -1,0 +1,9 @@
+# Commands Used for Task 2: Directory Listing & File Info
+
+# Compile and run library version:
+gcc -o dir_list_lib dir_list_lib.c
+./dir_list_lib
+
+# Compile and run system call version:
+gcc -o dir_list_sys dir_list_sys.c
+./dir_list_sys
