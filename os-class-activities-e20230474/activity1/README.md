@@ -206,28 +206,53 @@ In contrast, the system call version (`file_creator_sys`) executed cleanly: it m
 ### strace Output — Library Version (File Creator)
 
 <!-- Screenshot: strace -e trace=openat,read,write,close ./file_creator_lib -->
-<!-- IMPORTANT: Highlight/annotate the key system calls in your screenshot -->
 ![strace - Library version File Creator](screenshots/strace_lib_creator.png)
+
+**Key system calls observed:**
+- `openat(AT_FDCWD, "output.txt", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3`: `fopen("output.txt", "w")` automatically specifies `0666` permission bits by default (which umask modifies).
+- `write(3, "Hello from Operating Systems cla"..., 36) = 36`: The buffered string from `fprintf()` is flushed to file descriptor 3 in a single write operation when `fclose()` is called.
+- `write(1, "File created successfully!\n", 27) = 27`: `printf()` flushes the confirmation message to standard output (fd 1).
 
 ### strace Output — System Call Version (File Creator)
 
 <!-- Screenshot: strace -e trace=openat,read,write,close ./file_creator_sys -->
-<!-- IMPORTANT: Highlight/annotate the key system calls in your screenshot -->
 ![strace - System call version File Creator](screenshots/strace_sys_creator.png)
+
+**Key system calls observed:**
+- `openat(AT_FDCWD, "output.txt", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3`: Direct system call `open()` explicitly enforces `0644` permission bits without stdio defaults.
+- `write(3, "Hello from Operating Systems cla"..., 36) = 36`: Direct unbuffered `write()` sends the exact byte buffer immediately to the kernel without stdio stream overhead.
+- `write(1, "File created successfully!\n", 27) = 27`: Direct unbuffered `write()` directly to fd 1 (`STDOUT_FILENO`).
 
 ### strace Output — Library Version (File Reader or Dir Listing)
 
 ![strace - Library version](screenshots/strace_lib_reader.png)
 
+**Key system calls observed:**
+- `openat(AT_FDCWD, "output.txt", O_RDONLY) = 3`: Opens file descriptor 3 in read-only mode.
+- `read(3, "Hello from Operating Systems cla"..., 4096) = 36`: `fgets()` requests a full 4096-byte chunk into the stdio stream buffer in memory.
+- `read(3, "", 4096) = 0`: Second read confirms End of File (EOF), triggering file close before writing to stdout.
+- `write(1, "Hello from Operating Systems cla"..., 36) = 36`: `printf("%s", buffer)` writes the cached line to stdout.
+
 ### strace Output — System Call Version (File Reader or Dir Listing)
 
 ![strace - System call version](screenshots/strace_sys_reader.png)
+
+**Key system calls observed:**
+- `openat(AT_FDCWD, "output.txt", O_RDONLY) = 3`: Opens file descriptor 3 directly.
+- `read(3, "Hello from Operating Systems cla"..., 256) = 36`: Direct `read()` requests the exact user buffer size (256 bytes) and returns 36 bytes read.
+- `write(1, "Hello from Operating Systems cla"..., 36) = 36`: Immediately streams the 36 bytes received to standard output (fd 1).
+- `read(3, "", 256) = 0`: Next loop iteration returns 0 (EOF), terminating the while loop cleanly.
 
 ### strace -c Summary Comparison
 
 <!-- Screenshot of `strace -c` output for both versions -->
 ![strace summary - Library](screenshots/strace_summary_lib.png)
 ![strace summary - Syscall](screenshots/strace_summary_sys.png)
+
+**Summary comparison breakdown:**
+- **Total System Calls:** Library version generated **38** calls vs. **34** calls in the syscall version (4 fewer calls in the syscall version).
+- **`fstat` difference:** Library version made 4 `fstat` calls vs. 2 in the syscall version (querying stream attributes & optimal buffer block sizes).
+- **`brk` difference:** Library version made 3 `brk` calls vs. 1 in the syscall version (allocating heap memory for `FILE` stream buffers).
 
 ### Questions
 
